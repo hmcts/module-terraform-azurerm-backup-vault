@@ -18,7 +18,7 @@ This module provisions a centralised Azure Backup Vault for Disaster Recovery (D
 
 | Policy Name | Purpose | Default Retention | RPO |
 |-------------|---------|-------------------|-----|
-| `postgresql-crit4-5` | Criticality 4 & 5 services | 8 weeks + archive tiers | 7 days |
+| `postgresql-crit4-5` | Criticality 4 & 5 services | 8 weeks + extended retention | 7 days |
 | `postgresql-test` | Testing with Plum/dev DBs | 1 week | 7 days |
 
 ## Usage
@@ -111,7 +111,7 @@ This module supports the following DR scenarios as defined in the initiative:
 
 ## Retention Configuration
 
-Default retention aligns with MOJ security guidance and Azure Backup archive tier support:
+Default retention aligns with MOJ security guidance:
 
 | Retention Type | Duration | Criteria |
 |----------------|----------|----------|
@@ -152,11 +152,11 @@ See [variables.tf](variables.tf) for the complete list of inputs.
 
 ## Important Notes
 
-⚠️ **WARNING**: Once `immutability` is set to `Locked`, it CANNOT be changed. Start with `Unlocked` until you've validated the configuration.
+**WARNING**: Once `immutability` is set to `Locked`, it CANNOT be changed. Start with `Unlocked` until you've validated the configuration.
 
-⚠️ **WARNING**: Once `soft_delete` is set to `AlwaysOn`, it CANNOT be changed.
+**WARNING**: Once `soft_delete` is set to `AlwaysOn`, it CANNOT be changed.
 
-⚠️ **WARNING**: Do not apply this to production until you've tested with the `postgresql-test` policy on non-critical databases (e.g., Plum).
+**WARNING**: Do not apply this to production until you've tested with the `postgresql-test` policy on non-critical databases (e.g., Plum).
 
 ## Testing
 

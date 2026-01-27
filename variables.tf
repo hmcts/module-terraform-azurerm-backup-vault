@@ -104,7 +104,7 @@ variable "user_assigned_identity_ids" {
 
 variable "enable_postgresql_crit4_5_policy" {
   type        = bool
-  description = "Whether to create the crit4_5 backup policy for PostgreSQL Flexible Server. This policy is for Criticality 4 and 5 services with 8-week retention and archive tiers."
+  description = "Whether to create the crit4_5 backup policy for PostgreSQL Flexible Server. This policy is for Criticality 4 and 5 services with 8-week retention and extended long-term retention."
   default     = true
 }
 

@@ -46,8 +46,8 @@ module "backup_vault" {
   # - Weekly backups (RPO: 7 days)
   # - 8-week default retention (per MOJ security guidance)
   # - 3-month weekly retention
-  # - 12-month monthly archive retention
-  # - 3-year yearly archive retention
+  # - 12-month monthly extended retention
+  # - 3-year yearly extended retention
 
   # Tags
   namespace   = var.namespace
