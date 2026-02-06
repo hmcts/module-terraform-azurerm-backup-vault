@@ -11,7 +11,8 @@ resource "azurerm_data_protection_backup_vault" "main" {
   redundancy          = var.redundancy
 
   # Cross-region restore only works with GeoRedundant storage
-  cross_region_restore_enabled = var.redundancy == "GeoRedundant" ? var.cross_region_restore_enabled : false
+  # Parameter must be completely omitted (not set to false) for LocallyRedundant/ZoneRedundant
+  cross_region_restore_enabled = var.redundancy == "GeoRedundant" ? var.cross_region_restore_enabled : null
 
   # Immutability settings - default to Unlocked for immutable backups
   immutability = var.immutability
