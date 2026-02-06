@@ -139,20 +139,20 @@ variable "crit4_5_default_retention_duration" {
 
 variable "crit4_5_weekly_retention_duration" {
   type        = string
-  description = "ISO 8601 duration for weekly retention of crit4_5 backups. Default is 3 months."
-  default     = "P3M"
+  description = "ISO 8601 duration for weekly retention of crit4_5 backups. Default is 8 weeks (P56D)."
+  default     = "P56D"
 }
 
 variable "crit4_5_monthly_retention_duration" {
   type        = string
-  description = "ISO 8601 duration for monthly point-in-time retention. Default is 12 months. Note: PostgreSQL Flexible Server vaulted backup uses VaultStore only (archive tier not supported)."
-  default     = "P12M"
+  description = "ISO 8601 duration for monthly point-in-time retention. Default is 1 month. Note: PostgreSQL Flexible Server vaulted backup uses VaultStore only (archive tier not supported)."
+  default     = "P1M"
 }
 
 variable "crit4_5_yearly_retention_duration" {
   type        = string
-  description = "ISO 8601 duration for yearly point-in-time retention. Default is 3 years. Note: PostgreSQL Flexible Server vaulted backup uses VaultStore only (archive tier not supported)."
-  default     = "P3Y"
+  description = "ISO 8601 duration for yearly point-in-time retention. Default is 1 year. Note: PostgreSQL Flexible Server vaulted backup uses VaultStore only (archive tier not supported)."
+  default     = "P1Y"
 }
 
 variable "crit4_5_enable_extended_retention" {
