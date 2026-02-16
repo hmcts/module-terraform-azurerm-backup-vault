@@ -49,6 +49,15 @@ module "backup_vault" {
   # - 12-month monthly extended retention
   # - 3-year yearly extended retention
 
+  # RBAC: Grant vault's managed identity Reader on the PostgreSQL resource group
+  # This is required for backup enrollment of PostgreSQL Flexible Servers
+  role_assignments = {
+    "reader-${azurerm_resource_group.backup.name}" = {
+      scope                = azurerm_resource_group.backup.id
+      role_definition_name = "Reader"
+    }
+  }
+
   # Tags
   namespace   = var.namespace
   application = var.application

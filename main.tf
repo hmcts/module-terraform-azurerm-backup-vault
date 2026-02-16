@@ -38,6 +38,21 @@ resource "azurerm_data_protection_backup_vault" "main" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
+# RBAC ROLE ASSIGNMENTS
+# Assigns roles to the vault's managed identity on specified resource scopes.
+# Common use case: "Reader" on resource groups containing PostgreSQL servers
+# that will be enrolled for backup.
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "azurerm_role_assignment" "vault_identity" {
+  for_each = var.role_assignments
+
+  scope                = each.value.scope
+  role_definition_name = each.value.role_definition_name
+  principal_id         = azurerm_data_protection_backup_vault.main.identity[0].principal_id
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
 # BACKUP POLICY - CRIT4_5 (Criticality 4 and 5 Services)
 # Policy for critical services with 8-week retention per MOJ security guidance
 # Reference: https://security-guidance.service.justice.gov.uk/system-backup-standard/#retention-schedules

@@ -185,6 +185,20 @@ variable "test_retention_duration" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
+# OPTIONAL VARIABLES - RBAC Role Assignments
+# Assign roles to the vault's managed identity on specified resource scopes
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "role_assignments" {
+  type = map(object({
+    scope                = string
+    role_definition_name = string
+  }))
+  description = "Map of role assignments for the backup vault's managed identity. Key is a unique descriptive name, value contains the resource scope (any Azure resource ID) and the role to assign. Requires enable_system_assigned_identity = true."
+  default     = {}
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL VARIABLES - Tags
 # ---------------------------------------------------------------------------------------------------------------------
 

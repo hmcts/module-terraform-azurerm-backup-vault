@@ -65,6 +65,11 @@ output "postgresql_policy_ids" {
   )
 }
 
+output "role_assignment_ids" {
+  description = "Map of role assignment keys to their Azure resource IDs."
+  value       = { for k, v in azurerm_role_assignment.vault_identity : k => v.id }
+}
+
 output "vault_configuration" {
   description = "Summary of the backup vault configuration for documentation and validation purposes."
   value = {
