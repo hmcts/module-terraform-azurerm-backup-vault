@@ -27,7 +27,7 @@ This module provisions a centralised Azure Backup Vault for Disaster Recovery (D
 
 ```hcl
 module "backup_vault" {
-  source = "git::https://github.com/hmcts/cpp-module-terraform-azurerm-backup-vault.git?ref=main"
+  source = "git::https://github.com/hmcts/module-terraform-azurerm-backup-vault.git?ref=main"
 
   name                = "bvault-cpp-postgresql-prd"
   resource_group_name = azurerm_resource_group.backup.name
@@ -37,6 +37,14 @@ module "backup_vault" {
   # - redundancy = "GeoRedundant"
   # - immutability = "Unlocked"
   # - cross_region_restore_enabled = true
+
+  # Grant vault identity Reader on resource groups containing PostgreSQL servers
+  role_assignments = {
+    "reader-rg-prd-svc-01" = {
+      scope                = data.azurerm_resource_group.svc.id
+      role_definition_name = "Reader"
+    }
+  }
 
   tags = {
     environment = "prd"
@@ -60,24 +68,36 @@ resource "azurerm_data_protection_backup_instance_postgresql_flexible_server" "m
 }
 ```
 
-### Required RBAC for PostgreSQL Backup
+### RBAC Role Assignments
 
-The backup vault's managed identity requires specific roles for backup and restore operations:
+The module includes a built-in `role_assignments` variable to assign roles to the vault's managed identity on any Azure resource scope. This is required for backup enrollment of PostgreSQL Flexible Servers.
 
-**For Backup:**
+**Required roles for PostgreSQL backup:**
+
+| Role | Scope | Managed By |
+|------|-------|------------|
+| `Reader` | Resource group containing the PostgreSQL server | This module (via `role_assignments`) |
+| `PostgreSQL Flexible Server Long Term Retention Backup Role` | PostgreSQL server | PostgreSQL module |
+
 ```hcl
-# Long Term Retention Backup Role on the PostgreSQL server
-resource "azurerm_role_assignment" "backup_ltr" {
-  scope                = azurerm_postgresql_flexible_server.main.id
-  role_definition_name = "PostgreSQL Flexible Server Long Term Retention Backup Role"
-  principal_id         = module.backup_vault.backup_vault_principal_id
-}
+module "backup_vault" {
+  source = "git::https://github.com/hmcts/module-terraform-azurerm-backup-vault.git?ref=main"
 
-# Reader on the resource group containing the server
-resource "azurerm_role_assignment" "backup_reader" {
-  scope                = azurerm_resource_group.main.id
-  role_definition_name = "Reader"
-  principal_id         = module.backup_vault.backup_vault_principal_id
+  name                = "bvault-cpp-postgresql-prd"
+  resource_group_name = azurerm_resource_group.backup.name
+  location            = azurerm_resource_group.backup.location
+
+  # Grant vault identity Reader on resource groups containing PostgreSQL servers
+  role_assignments = {
+    "reader-rg-dev-svc-01" = {
+      scope                = data.azurerm_resource_group.svc.id
+      role_definition_name = "Reader"
+    }
+    "reader-rg-dev-data-01" = {
+      scope                = data.azurerm_resource_group.data.id
+      role_definition_name = "Reader"
+    }
+  }
 }
 ```
 
@@ -137,6 +157,7 @@ Extended retention can be disabled via `crit4_5_enable_extended_retention = fals
 | enable_postgresql_crit4_5_policy | Create the crit4_5 backup policy | `bool` | `true` | no |
 | enable_postgresql_test_policy | Create the test backup policy | `bool` | `true` | no |
 | crit4_5_enable_extended_retention | Enable monthly/yearly extended retention | `bool` | `true` | no |
+| role_assignments | Map of role assignments for the vault's managed identity (key = name, value = {scope, role_definition_name}) | `map(object)` | `{}` | no |
 
 See [variables.tf](variables.tf) for the complete list of inputs.
 
@@ -149,6 +170,7 @@ See [variables.tf](variables.tf) for the complete list of inputs.
 | postgresql_crit4_5_policy_id | The crit4_5 policy ID for critical databases |
 | postgresql_test_policy_id | The test policy ID for testing |
 | postgresql_policy_ids | Map of policy names to IDs |
+| role_assignment_ids | Map of role assignment keys to their Azure resource IDs |
 
 ## Important Notes
 
