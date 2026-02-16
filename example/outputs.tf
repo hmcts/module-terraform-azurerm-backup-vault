@@ -28,6 +28,11 @@ output "policy_ids_map" {
   value       = module.backup_vault.postgresql_policy_ids
 }
 
+output "role_assignment_ids" {
+  description = "Map of role assignment keys to their Azure resource IDs"
+  value       = module.backup_vault.role_assignment_ids
+}
+
 output "vault_configuration" {
   description = "Summary of the vault configuration"
   value       = module.backup_vault.vault_configuration
