@@ -155,7 +155,8 @@ resource "azurerm_data_protection_backup_policy_postgresql_flexible_server" "tes
 
 # ---------------------------------------------------------------------------------------------------------------------
 # BACKUP POLICY - ADLS CRIT4_5 (Criticality 4 and 5 Services)
-# Azure Data Lake Storage vaulted backup policy sharing the crit4_5 variables with PostgreSQL (8 weeks + extended).
+# Azure Data Lake Storage vaulted backup policy sharing the crit4_5 retention variables with PostgreSQL (8 weeks +
+# extended). Backs up on adls_backup_schedule (default daily at 02:00 UTC).
 # All arguments on this resource are ForceNew - changing a crit4_5 variable replaces this policy.
 # Retention rule priority is determined by block order (first = highest), matching PostgreSQL priorities 10/15/20.
 # ---------------------------------------------------------------------------------------------------------------------
@@ -166,7 +167,7 @@ resource "azurerm_data_protection_backup_policy_data_lake_storage" "crit4_5" {
   name                            = "adls-crit4-5"
   data_protection_backup_vault_id = azurerm_data_protection_backup_vault.main.id
 
-  backup_schedule = [var.crit4_5_backup_schedule]
+  backup_schedule = [var.adls_backup_schedule]
   time_zone       = var.crit4_5_timezone
 
   default_retention_duration = var.crit4_5_default_retention_duration
@@ -211,7 +212,7 @@ resource "azurerm_data_protection_backup_policy_data_lake_storage" "test" {
   name                            = "adls-test"
   data_protection_backup_vault_id = azurerm_data_protection_backup_vault.main.id
 
-  backup_schedule = [var.test_backup_schedule]
+  backup_schedule = [var.adls_backup_schedule]
   time_zone       = var.test_timezone
 
   default_retention_duration = var.test_retention_duration
