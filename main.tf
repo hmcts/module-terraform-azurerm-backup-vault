@@ -24,7 +24,7 @@ resource "azurerm_data_protection_backup_vault" "main" {
   dynamic "identity" {
     for_each = var.enable_system_assigned_identity || length(var.user_assigned_identity_ids) > 0 ? [1] : []
     content {
-      type = local.identity_type
+      type         = local.identity_type
       identity_ids = length(var.user_assigned_identity_ids) > 0 ? var.user_assigned_identity_ids : null
     }
   }
@@ -151,4 +151,69 @@ resource "azurerm_data_protection_backup_policy_postgresql_flexible_server" "tes
       data_store_type = "VaultStore"
     }
   }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# BACKUP POLICY - ADLS CRIT4_5 (Criticality 4 and 5 Services)
+# Azure Data Lake Storage vaulted backup policy mirroring the PostgreSQL crit4_5 retention (8 weeks + extended).
+# All arguments on this resource are ForceNew, so it has its own variables rather than sharing the PostgreSQL ones -
+# a change to PostgreSQL retention must not force replacement of a policy that may have backup instances attached.
+# Retention rule priority is determined by block order (first = highest), matching PostgreSQL priorities 10/15/20.
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "azurerm_data_protection_backup_policy_data_lake_storage" "crit4_5" {
+  count = var.enable_adls_crit4_5_policy ? 1 : 0
+
+  name                            = "adls-crit4-5"
+  data_protection_backup_vault_id = azurerm_data_protection_backup_vault.main.id
+
+  backup_schedule = [var.adls_crit4_5_backup_schedule]
+  time_zone       = var.adls_crit4_5_timezone
+
+  default_retention_duration = var.adls_crit4_5_default_retention_duration
+
+  # Yearly retention - keep first backup of each year (highest priority)
+  dynamic "retention_rule" {
+    for_each = var.adls_crit4_5_enable_extended_retention ? [1] : []
+    content {
+      name              = "yearly"
+      duration          = var.adls_crit4_5_yearly_retention_duration
+      absolute_criteria = "FirstOfYear"
+    }
+  }
+
+  # Monthly retention - keep first backup of each month
+  dynamic "retention_rule" {
+    for_each = var.adls_crit4_5_enable_extended_retention ? [1] : []
+    content {
+      name              = "monthly"
+      duration          = var.adls_crit4_5_monthly_retention_duration
+      absolute_criteria = "FirstOfMonth"
+    }
+  }
+
+  # Weekly retention - keep first backup of each week
+  retention_rule {
+    name              = "weekly"
+    duration          = var.adls_crit4_5_weekly_retention_duration
+    absolute_criteria = "FirstOfWeek"
+  }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# BACKUP POLICY - ADLS TEST
+# Minimal (7 day) retention policy for validating ADLS backup/restore. Because the vault is immutable, recovery points
+# cannot be deleted early - this keeps storage cost of test backups to a minimum.
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "azurerm_data_protection_backup_policy_data_lake_storage" "test" {
+  count = var.enable_adls_test_policy ? 1 : 0
+
+  name                            = "adls-test"
+  data_protection_backup_vault_id = azurerm_data_protection_backup_vault.main.id
+
+  backup_schedule = [var.adls_test_backup_schedule]
+  time_zone       = var.adls_test_timezone
+
+  default_retention_duration = var.adls_test_retention_duration
 }

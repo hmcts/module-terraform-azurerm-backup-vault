@@ -42,6 +42,10 @@ module "backup_vault" {
   enable_postgresql_crit4_5_policy = true
   enable_postgresql_test_policy    = true
 
+  # Optional ADLS (Data Lake Storage) policies - disabled by default
+  enable_adls_crit4_5_policy = true
+  enable_adls_test_policy    = true
+
   # crit4_5 policy uses sensible defaults per initiative:
   # - Weekly backups (RPO: 7 days)
   # - 8-week default retention (per MOJ security guidance)

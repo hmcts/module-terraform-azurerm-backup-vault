@@ -185,6 +185,85 @@ variable "test_retention_duration" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
+# OPTIONAL VARIABLES - ADLS (Azure Data Lake Storage) Backup Policies
+# Disabled by default so existing vaults are unaffected. Defaults mirror the PostgreSQL crit4_5 / test policies.
+# NOTE: every ADLS policy argument is ForceNew - changing any of these replaces the policy, which Azure will reject
+# while backup instances are attached.
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "enable_adls_crit4_5_policy" {
+  type        = bool
+  description = "Whether to create the crit4_5 backup policy for Azure Data Lake Storage. Uses the same retention as the PostgreSQL crit4_5 policy (8 weeks + extended retention). Defaults to false."
+  default     = false
+}
+
+variable "enable_adls_test_policy" {
+  type        = bool
+  description = "Whether to create a test backup policy for Azure Data Lake Storage with 7 day retention, for testing without paying for long-lived immutable storage. Defaults to false."
+  default     = false
+}
+
+variable "adls_crit4_5_backup_schedule" {
+  type        = string
+  description = "ISO 8601 repeating time interval for ADLS crit4_5 backups (daily or weekly supported). Default is weekly on Sunday at 02:00 UTC."
+  default     = "R/2024-01-07T02:00:00+00:00/P1W"
+}
+
+variable "adls_crit4_5_timezone" {
+  type        = string
+  description = "Timezone for the ADLS crit4_5 backup schedule."
+  default     = "UTC"
+}
+
+variable "adls_crit4_5_default_retention_duration" {
+  type        = string
+  description = "ISO 8601 duration for default retention of ADLS crit4_5 backups. Default is 8 weeks (P56D), matching the PostgreSQL crit4_5 policy."
+  default     = "P56D"
+}
+
+variable "adls_crit4_5_weekly_retention_duration" {
+  type        = string
+  description = "ISO 8601 duration for weekly retention of ADLS crit4_5 backups. Default is 8 weeks (P56D), matching the PostgreSQL crit4_5 policy."
+  default     = "P56D"
+}
+
+variable "adls_crit4_5_monthly_retention_duration" {
+  type        = string
+  description = "ISO 8601 duration for monthly retention of ADLS crit4_5 backups. Default is 2 months (P2M), matching the PostgreSQL crit4_5 policy."
+  default     = "P2M"
+}
+
+variable "adls_crit4_5_yearly_retention_duration" {
+  type        = string
+  description = "ISO 8601 duration for yearly retention of ADLS crit4_5 backups. Default is 1 year (P1Y), matching the PostgreSQL crit4_5 policy."
+  default     = "P1Y"
+}
+
+variable "adls_crit4_5_enable_extended_retention" {
+  type        = bool
+  description = "Whether to add monthly and yearly retention rules to the ADLS crit4_5 policy. Defaults to true, matching the PostgreSQL crit4_5 policy."
+  default     = true
+}
+
+variable "adls_test_backup_schedule" {
+  type        = string
+  description = "ISO 8601 repeating time interval for ADLS test backups. Default is weekly on Sunday at 03:00 UTC."
+  default     = "R/2024-01-07T03:00:00+00:00/P1W"
+}
+
+variable "adls_test_timezone" {
+  type        = string
+  description = "Timezone for the ADLS test backup schedule."
+  default     = "UTC"
+}
+
+variable "adls_test_retention_duration" {
+  type        = string
+  description = "ISO 8601 duration for ADLS test backup retention. Default is 7 days (P7D) for minimal cost during testing."
+  default     = "P7D"
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL VARIABLES - RBAC Role Assignments
 # Assign roles to the vault's managed identity on specified resource scopes
 # ---------------------------------------------------------------------------------------------------------------------
