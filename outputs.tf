@@ -68,6 +68,26 @@ output "adls_test_policy_name" {
   value       = var.enable_adls_test_policy ? azurerm_data_protection_backup_policy_data_lake_storage.test[0].name : null
 }
 
+output "blob_crit4_5_policy_id" {
+  description = "The ID of the crit4_5 backup policy for Azure Blob Storage. Null when enable_blob_crit4_5_policy is false."
+  value       = var.enable_blob_crit4_5_policy ? azurerm_data_protection_backup_policy_blob_storage.crit4_5[0].id : null
+}
+
+output "blob_crit4_5_policy_name" {
+  description = "The name of the crit4_5 backup policy for Azure Blob Storage."
+  value       = var.enable_blob_crit4_5_policy ? azurerm_data_protection_backup_policy_blob_storage.crit4_5[0].name : null
+}
+
+output "blob_test_policy_id" {
+  description = "The ID of the test backup policy for Azure Blob Storage. Null when enable_blob_test_policy is false."
+  value       = var.enable_blob_test_policy ? azurerm_data_protection_backup_policy_blob_storage.test[0].id : null
+}
+
+output "blob_test_policy_name" {
+  description = "The name of the test backup policy for Azure Blob Storage."
+  value       = var.enable_blob_test_policy ? azurerm_data_protection_backup_policy_blob_storage.test[0].name : null
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CONVENIENCE OUTPUTS
 # Map outputs for easy consumption
@@ -93,6 +113,18 @@ output "adls_policy_ids" {
     } : {},
     var.enable_adls_test_policy ? {
       "test" = azurerm_data_protection_backup_policy_data_lake_storage.test[0].id
+    } : {}
+  )
+}
+
+output "blob_policy_ids" {
+  description = "Map of enabled Azure Blob Storage backup policy names to their IDs."
+  value = merge(
+    var.enable_blob_crit4_5_policy ? {
+      "crit4_5" = azurerm_data_protection_backup_policy_blob_storage.crit4_5[0].id
+    } : {},
+    var.enable_blob_test_policy ? {
+      "test" = azurerm_data_protection_backup_policy_blob_storage.test[0].id
     } : {}
   )
 }

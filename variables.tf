@@ -126,6 +126,18 @@ variable "enable_adls_test_policy" {
   default     = false
 }
 
+variable "enable_blob_crit4_5_policy" {
+  type        = bool
+  description = "Whether to create the crit4_5 backup policy for Azure Blob Storage. Uses the PostgreSQL crit4_5 vaulted retention settings and 7 day operational retention. Defaults to false."
+  default     = false
+}
+
+variable "enable_blob_test_policy" {
+  type        = bool
+  description = "Whether to create a test backup policy for Azure Blob Storage. Uses the PostgreSQL test vaulted retention settings and 7 day operational retention to minimise test storage costs. Defaults to false."
+  default     = false
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL VARIABLES - crit4_5 Policy Configuration
 # Configuration for the criticality 4/5 backup policies (PostgreSQL and ADLS) based on MOJ security guidance.

@@ -216,3 +216,82 @@ resource "azurerm_data_protection_backup_policy_data_lake_storage" "test" {
 
   default_retention_duration = var.test_retention_duration
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# BACKUP POLICY - Azure Storage (blob) CRIT4_5 (Criticality 4 and 5 Services)
+# Azure Storage (blob) vaulted backup policy
+# All arguments on this resource are ForceNew - changing a crit4_5 variable replaces this policy.
+# ---------------------------------------------------------------------------------------------------------------------
+
+
+resource "azurerm_data_protection_backup_policy_blob_storage" "crit4_5" {
+  count = var.enable_blob_crit4_5_policy ? 1 : 0
+
+  name     = "blob-crit4-5"
+  vault_id = azurerm_data_protection_backup_vault.main.id
+
+  backup_repeating_time_intervals        = [var.crit4_5_backup_schedule]
+  time_zone                              = var.crit4_5_timezone
+  operational_default_retention_duration = "P7D"
+  vault_default_retention_duration       = var.crit4_5_default_retention_duration
+
+  retention_rule {
+    name     = "weekly"
+    priority = 20
+
+    life_cycle {
+      duration        = var.crit4_5_weekly_retention_duration
+      data_store_type = "VaultStore"
+    }
+
+    criteria {
+      absolute_criteria = "FirstOfWeek"
+    }
+  }
+
+  dynamic "retention_rule" {
+    for_each = var.crit4_5_enable_extended_retention ? [1] : []
+    content {
+      name     = "monthly"
+      priority = 15
+
+      life_cycle {
+        duration        = var.crit4_5_monthly_retention_duration
+        data_store_type = "VaultStore"
+      }
+
+      criteria {
+        absolute_criteria = "FirstOfMonth"
+      }
+    }
+  }
+
+  dynamic "retention_rule" {
+    for_each = var.crit4_5_enable_extended_retention ? [1] : []
+    content {
+      name     = "yearly"
+      priority = 10
+
+      life_cycle {
+        duration        = var.crit4_5_yearly_retention_duration
+        data_store_type = "VaultStore"
+      }
+
+      criteria {
+        absolute_criteria = "FirstOfYear"
+      }
+    }
+  }
+}
+
+resource "azurerm_data_protection_backup_policy_blob_storage" "test" {
+  count = var.enable_blob_test_policy ? 1 : 0
+
+  name     = "blob-test"
+  vault_id = azurerm_data_protection_backup_vault.main.id
+
+  backup_repeating_time_intervals        = [var.test_backup_schedule]
+  time_zone                              = var.test_timezone
+  operational_default_retention_duration = "P7D"
+  vault_default_retention_duration       = var.test_retention_duration
+}
