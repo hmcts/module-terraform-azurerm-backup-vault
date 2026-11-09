@@ -230,7 +230,7 @@ resource "azurerm_data_protection_backup_policy_blob_storage" "crit4_5" {
   name     = "blob-crit4-5"
   vault_id = azurerm_data_protection_backup_vault.main.id
 
-  backup_repeating_time_intervals        = [var.crit4_5_backup_schedule]
+  backup_repeating_time_intervals        = [var.blob_crit4_5_backup_schedule]
   time_zone                              = var.crit4_5_timezone
   operational_default_retention_duration = "P7D"
   vault_default_retention_duration       = var.crit4_5_default_retention_duration
@@ -290,7 +290,7 @@ resource "azurerm_data_protection_backup_policy_blob_storage" "test" {
   name     = "blob-test"
   vault_id = azurerm_data_protection_backup_vault.main.id
 
-  backup_repeating_time_intervals        = [var.test_backup_schedule]
+  backup_repeating_time_intervals        = [var.blob_test_backup_schedule]
   time_zone                              = var.test_timezone
   operational_default_retention_duration = "P7D"
   vault_default_retention_duration       = var.test_retention_duration

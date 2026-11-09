@@ -138,6 +138,18 @@ variable "enable_blob_test_policy" {
   default     = false
 }
 
+variable "blob_crit4_5_backup_schedule" {
+  type        = string
+  description = "ISO 8601 repeating time interval for Blob crit4_5 vaulted backups. Default is daily at 02:00 UTC. Independent of the PostgreSQL and ADLS schedule."
+  default     = "R/2024-01-07T02:00:00+00:00/P1D"
+}
+
+variable "blob_test_backup_schedule" {
+  type        = string
+  description = "ISO 8601 repeating time interval for Blob test vaulted backups. Default is daily at 03:00 UTC. Independent of the PostgreSQL and ADLS schedule."
+  default     = "R/2024-01-07T03:00:00+00:00/P1D"
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL VARIABLES - crit4_5 Policy Configuration
 # Configuration for the criticality 4/5 backup policies (PostgreSQL and ADLS) based on MOJ security guidance.
