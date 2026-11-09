@@ -114,73 +114,87 @@ variable "enable_postgresql_test_policy" {
   default     = true
 }
 
+variable "enable_adls_crit4_5_policy" {
+  type        = bool
+  description = "Whether to create the crit4_5 backup policy for Azure Data Lake Storage. Uses the same retention as the PostgreSQL crit4_5 policy (8 weeks + extended retention). Defaults to false."
+  default     = false
+}
+
+variable "enable_adls_test_policy" {
+  type        = bool
+  description = "Whether to create a test backup policy for Azure Data Lake Storage with 7 day retention, for testing without paying for long-lived immutable storage. Defaults to false."
+  default     = false
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL VARIABLES - crit4_5 Policy Configuration
-# Configuration for the criticality 4/5 backup policy based on MOJ security guidance
+# Configuration for the criticality 4/5 backup policies (PostgreSQL and ADLS) based on MOJ security guidance.
+# NOTE: all ADLS policy arguments are ForceNew - changing these replaces the ADLS crit4_5 policy, which Azure rejects
+# while backup instances are attached to it.
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "crit4_5_backup_schedule" {
   type        = string
-  description = "ISO 8601 repeating time interval for crit4_5 backups. Default is weekly on Sunday at 02:00 UTC. Format: R/YYYY-MM-DDTHH:MM:SS+00:00/P1W"
+  description = "ISO 8601 repeating time interval for crit4_5 backups (PostgreSQL and ADLS crit4_5 policies). Default is weekly on Sunday at 02:00 UTC. Format: R/YYYY-MM-DDTHH:MM:SS+00:00/P1W"
   default     = "R/2024-01-07T02:00:00+00:00/P1W"
 }
 
 variable "crit4_5_timezone" {
   type        = string
-  description = "Timezone for the crit4_5 backup schedule."
+  description = "Timezone for the crit4_5 backup schedule (PostgreSQL and ADLS crit4_5 policies)."
   default     = "UTC"
 }
 
 variable "crit4_5_default_retention_duration" {
   type        = string
-  description = "ISO 8601 duration for default retention of crit4_5 backups. Default is 8 weeks (P56D) per MOJ security guidance for high impact services."
+  description = "ISO 8601 duration for default retention of crit4_5 backups (PostgreSQL and ADLS crit4_5 policies). Default is 8 weeks (P56D) per MOJ security guidance for high impact services."
   default     = "P56D"
 }
 
 variable "crit4_5_weekly_retention_duration" {
   type        = string
-  description = "ISO 8601 duration for weekly retention of crit4_5 backups. Default is 8 weeks (P56D)."
+  description = "ISO 8601 duration for weekly retention of crit4_5 backups (PostgreSQL and ADLS crit4_5 policies). Default is 8 weeks (P56D)."
   default     = "P56D"
 }
 
 variable "crit4_5_monthly_retention_duration" {
   type        = string
-  description = "ISO 8601 duration for monthly point-in-time retention. Default is 2 months (P2M). Note: PostgreSQL Flexible Server vaulted backup uses VaultStore only (archive tier not supported)."
+  description = "ISO 8601 duration for monthly point-in-time retention of crit4_5 backups (PostgreSQL and ADLS crit4_5 policies). Default is 2 months (P2M). Stored in VaultStore (archive tier not supported)."
   default     = "P2M"
 }
 
 variable "crit4_5_yearly_retention_duration" {
   type        = string
-  description = "ISO 8601 duration for yearly point-in-time retention. Default is 1 year. Note: PostgreSQL Flexible Server vaulted backup uses VaultStore only (archive tier not supported)."
+  description = "ISO 8601 duration for yearly point-in-time retention of crit4_5 backups (PostgreSQL and ADLS crit4_5 policies). Default is 1 year (P1Y). Stored in VaultStore (archive tier not supported)."
   default     = "P1Y"
 }
 
 variable "crit4_5_enable_extended_retention" {
   type        = bool
-  description = "Whether to enable extended long-term retention (monthly and yearly point-in-time). Defaults to true for crit4_5 services but can be opt-out. Note: PostgreSQL Flexible Server vaulted backup stores in VaultStore only (archive tier not supported)."
+  description = "Whether to enable extended long-term retention (monthly and yearly point-in-time) on the crit4_5 policies (PostgreSQL and ADLS). Defaults to true for crit4_5 services but can be opt-out. Stored in VaultStore (archive tier not supported)."
   default     = true
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL VARIABLES - Test Policy Configuration
-# Configuration for the test backup policy with minimal retention
+# Configuration for the test backup policies (PostgreSQL and ADLS) with minimal retention
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "test_backup_schedule" {
   type        = string
-  description = "ISO 8601 repeating time interval for test backups. Default is weekly on Sunday at 03:00 UTC."
+  description = "ISO 8601 repeating time interval for test backups (PostgreSQL and ADLS test policies). Default is weekly on Sunday at 03:00 UTC."
   default     = "R/2024-01-07T03:00:00+00:00/P1W"
 }
 
 variable "test_timezone" {
   type        = string
-  description = "Timezone for the test backup schedule."
+  description = "Timezone for the test backup schedule (PostgreSQL and ADLS test policies)."
   default     = "UTC"
 }
 
 variable "test_retention_duration" {
   type        = string
-  description = "ISO 8601 duration for test backup retention. Default is 1 week (P7D) for minimal cost during testing."
+  description = "ISO 8601 duration for test backup retention (PostgreSQL and ADLS test policies). Default is 7 days (P7D) for minimal cost during testing."
   default     = "P7D"
 }
 

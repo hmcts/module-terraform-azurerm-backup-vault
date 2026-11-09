@@ -48,6 +48,26 @@ output "postgresql_test_policy_name" {
   value       = var.enable_postgresql_test_policy ? azurerm_data_protection_backup_policy_postgresql_flexible_server.test[0].name : null
 }
 
+output "adls_crit4_5_policy_id" {
+  description = "The ID of the crit4_5 backup policy for Azure Data Lake Storage. Null when enable_adls_crit4_5_policy is false."
+  value       = var.enable_adls_crit4_5_policy ? azurerm_data_protection_backup_policy_data_lake_storage.crit4_5[0].id : null
+}
+
+output "adls_crit4_5_policy_name" {
+  description = "The name of the crit4_5 backup policy for Azure Data Lake Storage."
+  value       = var.enable_adls_crit4_5_policy ? azurerm_data_protection_backup_policy_data_lake_storage.crit4_5[0].name : null
+}
+
+output "adls_test_policy_id" {
+  description = "The ID of the test backup policy for Azure Data Lake Storage. Null when enable_adls_test_policy is false."
+  value       = var.enable_adls_test_policy ? azurerm_data_protection_backup_policy_data_lake_storage.test[0].id : null
+}
+
+output "adls_test_policy_name" {
+  description = "The name of the test backup policy for Azure Data Lake Storage."
+  value       = var.enable_adls_test_policy ? azurerm_data_protection_backup_policy_data_lake_storage.test[0].name : null
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CONVENIENCE OUTPUTS
 # Map outputs for easy consumption
@@ -61,6 +81,18 @@ output "postgresql_policy_ids" {
     } : {},
     var.enable_postgresql_test_policy ? {
       "test" = azurerm_data_protection_backup_policy_postgresql_flexible_server.test[0].id
+    } : {}
+  )
+}
+
+output "adls_policy_ids" {
+  description = "Map of all ADLS backup policy names to their IDs. Use this for dynamic policy selection based on criticality."
+  value = merge(
+    var.enable_adls_crit4_5_policy ? {
+      "crit4_5" = azurerm_data_protection_backup_policy_data_lake_storage.crit4_5[0].id
+    } : {},
+    var.enable_adls_test_policy ? {
+      "test" = azurerm_data_protection_backup_policy_data_lake_storage.test[0].id
     } : {}
   )
 }

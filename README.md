@@ -1,6 +1,6 @@
 # Azure Backup Vault Terraform Module
 
-Terraform module to create an Azure Data Protection Backup Vault with immutable backup policies for PostgreSQL Flexible Server.
+Terraform module to create an Azure Data Protection Backup Vault with immutable backup policies for PostgreSQL Flexible Server and (optionally) Azure Data Lake Storage (ADLS Gen2).
 
 ## Purpose
 
@@ -20,6 +20,17 @@ This module provisions a centralised Azure Backup Vault for Disaster Recovery (D
 |-------------|---------|-------------------|-----|
 | `postgresql-crit4-5` | Criticality 4 & 5 services | 8 weeks + extended retention | 7 days |
 | `postgresql-test` | Testing with Plum/dev DBs | 1 week | 7 days |
+| `adls-crit4-5` | Criticality 4 & 5 ADLS storage accounts (opt-in) | 8 weeks + extended retention (same as `postgresql-crit4-5`) | 7 days |
+| `adls-test` | Testing ADLS backup/restore (opt-in) | 7 days | 7 days |
+
+The ADLS policies are **disabled by default** so existing vaults are unaffected. Enable them with `enable_adls_crit4_5_policy` / `enable_adls_test_policy`.
+
+## Requirements
+
+| Name | Version |
+|------|---------|
+| terraform | >= 1.0 |
+| azurerm | >= 4.68.0 (first release with `azurerm_data_protection_backup_policy_data_lake_storage` (4.67.0) and `azurerm_data_protection_backup_instance_data_lake_storage` (4.68.0)) |
 
 ## Usage
 
@@ -111,6 +122,39 @@ resource "azurerm_role_assignment" "restore_storage" {
 }
 ```
 
+### Azure Data Lake Storage (ADLS) Backup
+
+```hcl
+module "backup_vault" {
+  source = "git::https://github.com/hmcts/module-terraform-azurerm-backup-vault.git?ref=main"
+  # ...
+
+  enable_adls_crit4_5_policy = true
+  enable_adls_test_policy    = true
+
+  # The vault identity needs "Storage Account Backup Contributor" on each storage account to be backed up
+  role_assignments = {
+    "backup-contributor-sadatalake01" = {
+      scope                = azurerm_storage_account.datalake.id
+      role_definition_name = "Storage Account Backup Contributor"
+    }
+  }
+}
+
+resource "azurerm_data_protection_backup_instance_data_lake_storage" "main" {
+  name                            = "backup-${azurerm_storage_account.datalake.name}"
+  location                        = azurerm_storage_account.datalake.location
+  data_protection_backup_vault_id = module.backup_vault.backup_vault_id
+  backup_policy_id                = module.backup_vault.adls_test_policy_id
+  storage_account_id              = azurerm_storage_account.datalake.id
+  storage_container_names         = ["container1"]
+}
+```
+
+Use `adls-test` first: the vault is immutable, so recovery points cannot be deleted before they expire. The test policy's 7 day retention keeps the storage cost of test backups to a minimum.
+
+> **Note:** The ADLS policies share the `crit4_5_*` and `test_*` variables with the PostgreSQL policies, so both workloads always get the same schedule and retention. All arguments of the ADLS backup policy are ForceNew and Azure will not delete a policy while backup instances are attached, so changing a shared `crit4_5_*`/`test_*` value once ADLS backups exist will fail to apply for the ADLS policy.
+
 ## DR Scenarios
 
 This module supports the following DR scenarios as defined in the initiative:
@@ -156,7 +200,9 @@ Extended retention can be disabled via `crit4_5_enable_extended_retention = fals
 | cross_region_restore_enabled | Enable cross-region restore (only with GeoRedundant) | `bool` | `true` | no |
 | enable_postgresql_crit4_5_policy | Create the crit4_5 backup policy | `bool` | `true` | no |
 | enable_postgresql_test_policy | Create the test backup policy | `bool` | `true` | no |
-| crit4_5_enable_extended_retention | Enable monthly/yearly extended retention | `bool` | `true` | no |
+| crit4_5_enable_extended_retention | Enable monthly/yearly extended retention (PostgreSQL and ADLS crit4_5 policies) | `bool` | `true` | no |
+| enable_adls_crit4_5_policy | Create the ADLS crit4_5 backup policy | `bool` | `false` | no |
+| enable_adls_test_policy | Create the ADLS test backup policy (7 day retention) | `bool` | `false` | no |
 | role_assignments | Map of role assignments for the vault's managed identity (key = name, value = {scope, role_definition_name}) | `map(object)` | `{}` | no |
 
 See [variables.tf](variables.tf) for the complete list of inputs.
@@ -170,6 +216,9 @@ See [variables.tf](variables.tf) for the complete list of inputs.
 | postgresql_crit4_5_policy_id | The crit4_5 policy ID for critical databases |
 | postgresql_test_policy_id | The test policy ID for testing |
 | postgresql_policy_ids | Map of policy names to IDs |
+| adls_crit4_5_policy_id | The ADLS crit4_5 policy ID (null when disabled) |
+| adls_test_policy_id | The ADLS test policy ID (null when disabled) |
+| adls_policy_ids | Map of ADLS policy names to IDs |
 | role_assignment_ids | Map of role assignment keys to their Azure resource IDs |
 
 ## Important Notes
@@ -191,12 +240,21 @@ Use the `postgresql-test` policy to validate backup/restore functionality before
 5. Test restore process
 6. Document RTO (time from restore initiation to healthy DB)
 
+## Tests
+
+`tests/` contains `terraform test` cases using a mocked azurerm provider (no Azure credentials needed, Terraform >= 1.7):
+
+```shell
+terraform init -backend=false && terraform test
+```
+
 ## Related Links
 
 - [DTSPO-28347 Initiative](https://tools.hmcts.net/jira/browse/DTSPO-28347)
 - [MOJ Backup Retention Standards](https://security-guidance.service.justice.gov.uk/system-backup-standard/#retention-schedules)
 - [Azure PostgreSQL Flexible Server Backup Support Matrix](https://learn.microsoft.com/en-gb/azure/backup/backup-azure-database-postgresql-flex-support-matrix)
 - [Azure PostgreSQL Backup Tutorial](https://learn.microsoft.com/en-gb/azure/backup/tutorial-create-first-backup-azure-database-postgresql-flex)
+- [Azure Data Lake Storage Backup Overview](https://learn.microsoft.com/en-gb/azure/backup/azure-data-lake-storage-backup-overview)
 - [Azure Backup Authentication with PostgreSQL](https://learn.microsoft.com/en-gb/azure/backup/backup-azure-database-postgresql-flex-overview#azure-backup-authentication-with-the-postgresql-server)
 
 <!-- BEGIN_TF_DOCS -->
