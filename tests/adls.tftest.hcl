@@ -52,7 +52,7 @@ run "no_extended_retention" {
   command = plan
   variables {
     enable_adls_crit4_5_policy             = true
-    adls_crit4_5_enable_extended_retention = false
+    crit4_5_enable_extended_retention      = false
   }
   assert {
     condition     = length(azurerm_data_protection_backup_policy_data_lake_storage.crit4_5[0].retention_rule) == 1

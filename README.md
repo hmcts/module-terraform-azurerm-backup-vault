@@ -153,7 +153,7 @@ resource "azurerm_data_protection_backup_instance_data_lake_storage" "main" {
 
 Use `adls-test` first: the vault is immutable, so recovery points cannot be deleted before they expire. The test policy's 7 day retention keeps the storage cost of test backups to a minimum.
 
-> **Note:** All arguments of the ADLS backup policy are ForceNew, and Azure will not delete a policy while backup instances are attached. ADLS policies therefore have their own `adls_*` variables (defaults copied from the PostgreSQL policies) so that tuning PostgreSQL retention never forces replacement of an ADLS policy.
+> **Note:** The ADLS policies share the `crit4_5_*` and `test_*` variables with the PostgreSQL policies, so both workloads always get the same schedule and retention. All arguments of the ADLS backup policy are ForceNew and Azure will not delete a policy while backup instances are attached, so changing a shared `crit4_5_*`/`test_*` value once ADLS backups exist will fail to apply for the ADLS policy.
 
 ## DR Scenarios
 
@@ -200,10 +200,9 @@ Extended retention can be disabled via `crit4_5_enable_extended_retention = fals
 | cross_region_restore_enabled | Enable cross-region restore (only with GeoRedundant) | `bool` | `true` | no |
 | enable_postgresql_crit4_5_policy | Create the crit4_5 backup policy | `bool` | `true` | no |
 | enable_postgresql_test_policy | Create the test backup policy | `bool` | `true` | no |
-| crit4_5_enable_extended_retention | Enable monthly/yearly extended retention | `bool` | `true` | no |
+| crit4_5_enable_extended_retention | Enable monthly/yearly extended retention (PostgreSQL and ADLS crit4_5 policies) | `bool` | `true` | no |
 | enable_adls_crit4_5_policy | Create the ADLS crit4_5 backup policy | `bool` | `false` | no |
 | enable_adls_test_policy | Create the ADLS test backup policy (7 day retention) | `bool` | `false` | no |
-| adls_crit4_5_enable_extended_retention | Enable monthly/yearly retention on the ADLS crit4_5 policy | `bool` | `true` | no |
 | role_assignments | Map of role assignments for the vault's managed identity (key = name, value = {scope, role_definition_name}) | `map(object)` | `{}` | no |
 
 See [variables.tf](variables.tf) for the complete list of inputs.

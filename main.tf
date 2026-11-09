@@ -155,9 +155,8 @@ resource "azurerm_data_protection_backup_policy_postgresql_flexible_server" "tes
 
 # ---------------------------------------------------------------------------------------------------------------------
 # BACKUP POLICY - ADLS CRIT4_5 (Criticality 4 and 5 Services)
-# Azure Data Lake Storage vaulted backup policy mirroring the PostgreSQL crit4_5 retention (8 weeks + extended).
-# All arguments on this resource are ForceNew, so it has its own variables rather than sharing the PostgreSQL ones -
-# a change to PostgreSQL retention must not force replacement of a policy that may have backup instances attached.
+# Azure Data Lake Storage vaulted backup policy sharing the crit4_5 variables with PostgreSQL (8 weeks + extended).
+# All arguments on this resource are ForceNew - changing a crit4_5 variable replaces this policy.
 # Retention rule priority is determined by block order (first = highest), matching PostgreSQL priorities 10/15/20.
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -167,27 +166,27 @@ resource "azurerm_data_protection_backup_policy_data_lake_storage" "crit4_5" {
   name                            = "adls-crit4-5"
   data_protection_backup_vault_id = azurerm_data_protection_backup_vault.main.id
 
-  backup_schedule = [var.adls_crit4_5_backup_schedule]
-  time_zone       = var.adls_crit4_5_timezone
+  backup_schedule = [var.crit4_5_backup_schedule]
+  time_zone       = var.crit4_5_timezone
 
-  default_retention_duration = var.adls_crit4_5_default_retention_duration
+  default_retention_duration = var.crit4_5_default_retention_duration
 
   # Yearly retention - keep first backup of each year (highest priority)
   dynamic "retention_rule" {
-    for_each = var.adls_crit4_5_enable_extended_retention ? [1] : []
+    for_each = var.crit4_5_enable_extended_retention ? [1] : []
     content {
       name              = "yearly"
-      duration          = var.adls_crit4_5_yearly_retention_duration
+      duration          = var.crit4_5_yearly_retention_duration
       absolute_criteria = "FirstOfYear"
     }
   }
 
   # Monthly retention - keep first backup of each month
   dynamic "retention_rule" {
-    for_each = var.adls_crit4_5_enable_extended_retention ? [1] : []
+    for_each = var.crit4_5_enable_extended_retention ? [1] : []
     content {
       name              = "monthly"
-      duration          = var.adls_crit4_5_monthly_retention_duration
+      duration          = var.crit4_5_monthly_retention_duration
       absolute_criteria = "FirstOfMonth"
     }
   }
@@ -195,7 +194,7 @@ resource "azurerm_data_protection_backup_policy_data_lake_storage" "crit4_5" {
   # Weekly retention - keep first backup of each week
   retention_rule {
     name              = "weekly"
-    duration          = var.adls_crit4_5_weekly_retention_duration
+    duration          = var.crit4_5_weekly_retention_duration
     absolute_criteria = "FirstOfWeek"
   }
 }
@@ -212,8 +211,8 @@ resource "azurerm_data_protection_backup_policy_data_lake_storage" "test" {
   name                            = "adls-test"
   data_protection_backup_vault_id = azurerm_data_protection_backup_vault.main.id
 
-  backup_schedule = [var.adls_test_backup_schedule]
-  time_zone       = var.adls_test_timezone
+  backup_schedule = [var.test_backup_schedule]
+  time_zone       = var.test_timezone
 
-  default_retention_duration = var.adls_test_retention_duration
+  default_retention_duration = var.test_retention_duration
 }
