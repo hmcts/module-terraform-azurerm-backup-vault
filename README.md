@@ -155,7 +155,7 @@ resource "azurerm_data_protection_backup_instance_data_lake_storage" "main" {
 
 Use `adls-test` first: its 7-day retention limits how long test recovery points are retained and helps keep test backup storage costs down.
 
-> **Note:** The ADLS policies share the `crit4_5_*` and `test_*` variables with the PostgreSQL policies, so both workloads always get the same schedule and retention. All arguments of the ADLS backup policy are ForceNew and Azure will not delete a policy while backup instances are attached, so changing a shared `crit4_5_*`/`test_*` value once ADLS backups exist will fail to apply for the ADLS policy.
+> **Note:** The ADLS policies back up on `adls_crit4_5_backup_schedule` and `adls_test_backup_schedule` (both default to daily at 02:00 UTC). Retention is shared with the PostgreSQL policies via the `crit4_5_*` and `test_*` retention variables. All arguments of the ADLS backup policy are ForceNew and Azure will not delete a policy while backup instances are attached, so changing a shared `crit4_5_*`/`test_*` value once ADLS backups exist will fail to apply for the ADLS policy.
 
 ### Azure Blob Storage Backup
 
@@ -284,6 +284,7 @@ Use the `postgresql-test` policy to validate backup/restore functionality before
 4. Wait for initial backup to complete
 5. Test restore process
 6. Document RTO (time from restore initiation to healthy DB)
+
 ## Related Links
 
 - [DTSPO-28347 Initiative](https://tools.hmcts.net/jira/browse/DTSPO-28347)

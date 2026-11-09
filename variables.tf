@@ -126,6 +126,7 @@ variable "enable_adls_test_policy" {
   default     = false
 }
 
+<<<<<<< HEAD
 variable "enable_blob_crit4_5_policy" {
   type        = bool
   description = "Whether to create the crit4_5 backup policy for Azure Blob Storage. Uses the PostgreSQL crit4_5 vaulted retention settings and 7 day operational retention. Defaults to false."
@@ -148,6 +149,18 @@ variable "blob_test_backup_schedule" {
   type        = string
   description = "ISO 8601 repeating time interval for Blob test vaulted backups. Default is daily at 03:00 UTC. Independent of the PostgreSQL and ADLS schedule."
   default     = "R/2026-11-09T03:00:00+00:00/P1D"
+=======
+variable "adls_crit4_5_backup_schedule" {
+  type        = string
+  description = "ISO 8601 repeating time interval for the ADLS crit4_5 backup policy (daily or weekly supported). Default is daily at 02:00 UTC. Format: R/YYYY-MM-DDTHH:MM:SS+00:00/P1D. NOTE: changing this replaces the ADLS crit4_5 policy (ForceNew), which Azure rejects while backup instances are attached."
+  default     = "R/2024-01-07T02:00:00+00:00/P1D"
+}
+
+variable "adls_test_backup_schedule" {
+  type        = string
+  description = "ISO 8601 repeating time interval for the ADLS test backup policy (daily or weekly supported). Default is daily at 02:00 UTC. Format: R/YYYY-MM-DDTHH:MM:SS+00:00/P1D. NOTE: changing this replaces the ADLS test policy (ForceNew), which Azure rejects while backup instances are attached."
+  default     = "R/2024-01-07T02:00:00+00:00/P1D"
+>>>>>>> 0eae2a2fb9f767682367c1ef469ad971a62e2443
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -159,7 +172,7 @@ variable "blob_test_backup_schedule" {
 
 variable "crit4_5_backup_schedule" {
   type        = string
-  description = "ISO 8601 repeating time interval for crit4_5 backups (PostgreSQL and ADLS crit4_5 policies). Default is weekly on Sunday at 02:00 UTC. Format: R/YYYY-MM-DDTHH:MM:SS+00:00/P1W"
+  description = "ISO 8601 repeating time interval for PostgreSQL crit4_5 backups (ADLS uses adls_crit4_5_backup_schedule). Default is weekly on Sunday at 02:00 UTC. Format: R/YYYY-MM-DDTHH:MM:SS+00:00/P1W"
   default     = "R/2024-01-07T02:00:00+00:00/P1W"
 }
 
@@ -206,7 +219,7 @@ variable "crit4_5_enable_extended_retention" {
 
 variable "test_backup_schedule" {
   type        = string
-  description = "ISO 8601 repeating time interval for test backups (PostgreSQL and ADLS test policies). Default is weekly on Sunday at 03:00 UTC."
+  description = "ISO 8601 repeating time interval for PostgreSQL test backups (ADLS uses adls_test_backup_schedule). Default is weekly on Sunday at 03:00 UTC."
   default     = "R/2024-01-07T03:00:00+00:00/P1W"
 }
 
