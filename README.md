@@ -20,8 +20,8 @@ This module provisions a centralised Azure Backup Vault for Disaster Recovery (D
 |-------------|---------|-------------------|-----|
 | `postgresql-crit4-5` | Criticality 4 & 5 services | 8 weeks + extended retention | 7 days |
 | `postgresql-test` | Testing with Plum/dev DBs | 1 week | 7 days |
-| `adls-crit4-5` | Criticality 4 & 5 ADLS storage accounts (opt-in) | 8 weeks + extended retention (same as `postgresql-crit4-5`) | 7 days |
-| `adls-test` | Testing ADLS backup/restore (opt-in) | 7 days | 7 days |
+| `adls-crit4-5` | Criticality 4 & 5 ADLS storage accounts (opt-in) | 8 weeks + extended retention (same as `postgresql-crit4-5`) | 1 day |
+| `adls-test` | Testing ADLS backup/restore (opt-in) | 7 days | 1 day |
 
 The ADLS policies are **disabled by default** so existing vaults are unaffected. Enable them with `enable_adls_crit4_5_policy` / `enable_adls_test_policy`.
 
@@ -153,7 +153,7 @@ resource "azurerm_data_protection_backup_instance_data_lake_storage" "main" {
 
 Use `adls-test` first: the vault is immutable, so recovery points cannot be deleted before they expire. The test policy's 7 day retention keeps the storage cost of test backups to a minimum.
 
-> **Note:** The ADLS policies share the `crit4_5_*` and `test_*` variables with the PostgreSQL policies, so both workloads always get the same schedule and retention. All arguments of the ADLS backup policy are ForceNew and Azure will not delete a policy while backup instances are attached, so changing a shared `crit4_5_*`/`test_*` value once ADLS backups exist will fail to apply for the ADLS policy.
+> **Note:** The ADLS policies back up on `adls_crit4_5_backup_schedule` and `adls_test_backup_schedule` (both default to daily at 02:00 UTC). Retention is shared with the PostgreSQL policies via the `crit4_5_*` and `test_*` retention variables. All arguments of the ADLS backup policy are ForceNew and Azure will not delete a policy while backup instances are attached, so changing a shared `crit4_5_*`/`test_*` value once ADLS backups exist will fail to apply for the ADLS policy.
 
 ## DR Scenarios
 
@@ -203,6 +203,8 @@ Extended retention can be disabled via `crit4_5_enable_extended_retention = fals
 | crit4_5_enable_extended_retention | Enable monthly/yearly extended retention (PostgreSQL and ADLS crit4_5 policies) | `bool` | `true` | no |
 | enable_adls_crit4_5_policy | Create the ADLS crit4_5 backup policy | `bool` | `false` | no |
 | enable_adls_test_policy | Create the ADLS test backup policy (7 day retention) | `bool` | `false` | no |
+| adls_crit4_5_backup_schedule | Backup schedule for the ADLS crit4_5 policy | `string` | `"R/2024-01-07T02:00:00+00:00/P1D"` (daily 02:00 UTC) | no |
+| adls_test_backup_schedule | Backup schedule for the ADLS test policy | `string` | `"R/2024-01-07T02:00:00+00:00/P1D"` (daily 02:00 UTC) | no |
 | role_assignments | Map of role assignments for the vault's managed identity (key = name, value = {scope, role_definition_name}) | `map(object)` | `{}` | no |
 
 See [variables.tf](variables.tf) for the complete list of inputs.
@@ -239,14 +241,6 @@ Use the `postgresql-test` policy to validate backup/restore functionality before
 4. Wait for initial backup to complete
 5. Test restore process
 6. Document RTO (time from restore initiation to healthy DB)
-
-## Tests
-
-`tests/` contains `terraform test` cases using a mocked azurerm provider (no Azure credentials needed, Terraform >= 1.7):
-
-```shell
-terraform init -backend=false && terraform test
-```
 
 ## Related Links
 
