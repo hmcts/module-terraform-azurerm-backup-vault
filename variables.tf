@@ -126,6 +126,30 @@ variable "enable_adls_test_policy" {
   default     = false
 }
 
+variable "enable_blob_crit4_5_policy" {
+  type        = bool
+  description = "Whether to create the crit4_5 backup policy for Azure Blob Storage. Uses the PostgreSQL crit4_5 vaulted retention settings and 7 day operational retention. Defaults to false."
+  default     = false
+}
+
+variable "enable_blob_test_policy" {
+  type        = bool
+  description = "Whether to create a test backup policy for Azure Blob Storage. Uses the PostgreSQL test vaulted retention settings and 7 day operational retention to minimise test storage costs. Defaults to false."
+  default     = false
+}
+
+variable "blob_crit4_5_backup_schedule" {
+  type        = string
+  description = "ISO 8601 repeating time interval for Blob crit4_5 vaulted backups. Default is daily at 02:00 UTC. Independent of the PostgreSQL and ADLS schedule."
+  default     = "R/2026-11-09T02:00:00+00:00/P1D"
+}
+
+variable "blob_test_backup_schedule" {
+  type        = string
+  description = "ISO 8601 repeating time interval for Blob test vaulted backups. Default is daily at 03:00 UTC. Independent of the PostgreSQL and ADLS schedule."
+  default     = "R/2026-11-09T03:00:00+00:00/P1D"
+}
+
 variable "adls_crit4_5_backup_schedule" {
   type        = string
   description = "ISO 8601 repeating time interval for the ADLS crit4_5 backup policy (daily or weekly supported). Default is daily at 02:00 UTC. Format: R/YYYY-MM-DDTHH:MM:SS+00:00/P1D. NOTE: changing this replaces the ADLS crit4_5 policy (ForceNew), which Azure rejects while backup instances are attached."
